@@ -1,6 +1,16 @@
 :root {
   --notification-background-green:#d4edda;
+  --background:Honeydew;
+  --background-input:WhiteSmoke;
 }
+
+/*#######################################
+NEW
+#######################################*/
+.n-float-right{
+    float:right;
+}
+
 
 /*#######################################
 NOTIFICATION
@@ -108,7 +118,7 @@ CALL
    font-size:1rem;
    font-weight:bold;
    font-family:arial;
-   background:Snow;
+   background:var(--background);
    border-radius:5px;
 }
 /*#######################################
@@ -158,7 +168,7 @@ CHAT NOTIFICATION (это не чат это уведомление)
     padding:1rem;
     border:solid 1px black;
     border-radius:7px;
-    background:WhiteSmoke;
+    background:var(--background);
     position:relative;
     bottom:30px;
     display:flex;
@@ -186,7 +196,7 @@ CHAT NOTIFICATION (это не чат это уведомление)
 }
 
 .notificationChat input{
-    background:white;
+    background:var(--background-input);
     display:flex;
     flex-grow:1;
     margin-right:10px;
@@ -222,8 +232,8 @@ CHAT USERS */
     z-index:888;
     width:20%;
     height:100%;
-    background:white;
-    border:solid 1px black;
+    background:var(--background);
+    border:solid 1px grey;
     padding-top:10px;
     font-family:arial;
     font-size:1rem;
@@ -254,17 +264,18 @@ CHAT USERS */
 #users_chat ul{
     padding-left: 0;
     display:block;
+    margin-top:10px;
 }
 
 #users_chat ul li{
     display: block;
     padding: 0.5rem 1rem;
-    border: 1px solid rgba(0, 0, 0, 0.125);
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.125);
     width:100%;
 }
 
 #users_chat ul li:hover{
-    background:WhiteSmoke;
+    background:var(--background);
     cursor:pointer;
 }
 
@@ -285,7 +296,6 @@ CHAT USERS */
 SCROLL
 ################################################ */
 #users_chat, #chatArea{
-  scrollbar-color: rgb(210,210,210) rgb(46,54,69) !important;
   scrollbar-width: thin !important;
 }
 #users_chat::-webkit-scrollbar,#chatArea::-webkit-scrollbar {
@@ -310,8 +320,8 @@ SCROLL
     height:70%;
     font-family:arial;
     padding:10px;
-    border:solid 1px black;
-    background:white;
+    border:solid 1px grey;
+    background:var(--background);
     z-index:888;
     font-size:1rem;
  }
@@ -342,7 +352,7 @@ SCROLL
     width:100%;
     height:60%;
     box-sizing: border-box;
-    border: 1px solid black;
+    border: 1px solid grey;
     padding: 0.425rem 0.15rem;
     border-radius: 0.25rem;
 }
@@ -368,7 +378,7 @@ SCROLL
 
 #chatArea span{
     border-radius:9px;
-    background:Honeydew;
+    background:var(--background-input);
     padding:5px 20px;
 
 }

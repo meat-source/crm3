@@ -20,10 +20,13 @@ class NotificationConsumer(WebsocketConsumer):
             self.accept()
 
     def disconnect(self, close_code):
-        async_to_sync(self.channel_layer.group_discard)(
-            self.room_group_name,
-            self.channel_name
-        )
+        if self.scope["user"].is_anonymous:
+            self.close()
+        else:
+            async_to_sync(self.channel_layer.group_discard)(
+                self.room_group_name,
+                self.channel_name
+            )
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)

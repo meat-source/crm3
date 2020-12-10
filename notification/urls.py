@@ -10,14 +10,17 @@ urlpatterns = [
 
 ]
 
-apipatterns = [
-    path('api/accept/notification/<pk_user_to>/<status>/<auto_close>/<message>/', views.api_notification),
-    path('api/accept/chat/<pk_user_from>/<pk_user_to>/<message>/', views.api_chat),
-    path("example", TemplateView.as_view(template_name="notification_example.html")),
-]
-
+# For Example
 try:
-    if settings.NOTIFICATION_API:
-        urlpatterns = urlpatterns + apipatterns
+    if settings.NOTIFICATION_EXAMPLE:
+        from .example import example_send_notification, example_send_chat, example_call
+
+        examplepatterns = [
+            path('example_send_notification/', example_send_notification),
+            path('example_send_chat/', example_send_chat),
+            path('example_call', example_call),
+            path("example/", TemplateView.as_view(template_name="notification_example.html")),
+        ]
+        urlpatterns = urlpatterns + examplepatterns
 except AttributeError:
     pass

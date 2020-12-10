@@ -2,9 +2,44 @@ const ws_url_notification = 'ws://' + window.location.host + '/ws/notification/'
 var socket;
 var connected = false;
 var callAudio = new Audio();
+callAudio.src = staticRoot + 'audio/call.mp3'; // Указываем путь к звуку "клика"
 var msgAudio = new Audio();
+msgAudio.src = staticRoot + 'audio/msg.mp3'; // Указываем путь к звуку "клика"
 var opensUserChat = ''
 var countChatMessage = 0
+
+var queryMess = 0;
+
+
+function createNotificationDOM(type,text,autoClose=true,layout='topRight') {
+  // Интерфейс-обертка для noty.js
+     function wait_create_notification() {
+        // ф-ия очереди в noty работает некорректно и не показывает уведомления
+        // больше 5-ти за раз. Это ф-ия призвана ожидать
+            if(queryMess >= 5){
+                console.log('ожидание очереди сообщений')
+                timerId = setTimeout(wait_create_notification, 1000);
+            }
+            else{
+                queryMess = queryMess + 1
+                var notify = new Noty({
+                    callbacks: {
+                        afterClose: function(){queryMess = queryMess - 1}
+                    }
+                })
+                notify.show();
+                notify.setType(type);
+                notify.setText(text);
+                notify.setTheme('metroui');
+                if (autoClose){
+                    notify.setTimeout(3000);
+                }
+                clearTimeout(timerId);
+            }
+        }
+        var timerId = setTimeout(wait_create_notification,0)
+}
+
 
 typeof WebSocket !== 'undefined' && function connect() {
     socket = new WebSocket(ws_url_notification);
@@ -12,7 +47,7 @@ typeof WebSocket !== 'undefined' && function connect() {
     socket.onopen = onOpen;
     socket.onerror = err => {
         if (document.getElementById('msg-notification') == null && connected == false){
-            createNotificationDOM('нет соединения с сервером','danger',false)
+            createNotificationDOM('error','нет соединения с сервером',false)
         }
         console.error(err);
         socket.onclose = null;
@@ -62,173 +97,36 @@ function onMessage(event) {
     }
     // Ставим в ожидание если больше одного уведомления
     if(data.typeof == "notification"){
-        function wait_create_notification() {
-            if(document.getElementById("msg-notification") != null){
-                console.log('ожидание очереди')
-                timerId = setTimeout(wait_create_notification, 1000);
-            }
-            else{
-                createNotificationDOM(data.message,data.status,data.auto_close)
-                clearTimeout(timerId);
-            }
-        }
-        var timerId = setTimeout(wait_create_notification,0)
-
+        createNotificationDOM(data.status,data.message,data.auto_close)
     }
+
 }
 
 // Ответить серверу (послать на сервер)
 function answerNotification(answer){
     socket.send(JSON.stringify({'message': answer}))
-
-}
-
-// Просто фун-ия спать. Останавливает весь поток!
-function sleep(ms) {
-    ms += new Date().getTime();
-    while (new Date() < ms){}
-}
-
-// Создает блок звонка
-function createCallDOM(message){
-    callAudio.src = staticRoot + 'audio/call.mp3'; // Указываем путь к звуку "клика"
-    callAudio.play()
-    let wrap = document.createElement('div')
-    wrap.id = 'call-notification'
-    let dialog = document.createElement('dialog')
-    dialog.setAttribute('open','')
-    let p = document.createElement('h4')
-    p.innerHTML = message
-    let hr = document.createElement('hr')
-    let btnОk = document.createElement('button')
-    btnОk.innerHTML = 'ответить'
-    btnОk.setAttribute('onclick',"answerNotification('call-yes')")
-    btnОk.classList.add('n-btn')
-    btnОk.classList.add('n-btn-success')
-
-    let btnNo = document.createElement('button')
-    btnNo.classList.add('n-btn')
-    btnNo.classList.add('n-btn-danger')
-    btnNo.innerHTML = 'сбросить'
-    btnNo.setAttribute('onclick',"answerNotification('call-no');removeCallDOM()")
-    btnNo.style.float = 'right'
-
-    wrap.appendChild(dialog)
-    dialog.appendChild(p)
-    dialog.appendChild(hr)
-    dialog.appendChild(btnОk)
-    dialog.appendChild(btnNo)
-    document.body.appendChild(wrap)
-}
-
-// Удаляет блок звонка
-function removeCallDOM(){
-    let dialog = document.getElementById('call-notification')
-    dialog.parentNode.removeChild(dialog);
-    callAudio.pause();
 }
 
 
-// Создает уведомление сверху
-function createNotificationDOM(message,status,auto_close){
-    let div = document.createElement('div')
-    div.id = 'msg-notification'
-    div.classList.add('n-alert')
-    div.classList.add('n-alert-' + status)
-    if (auto_close === true){
-        div.classList.add('n-alert-animation')
-        setTimeout(removeNotificationDOM,4500)
-    }
-    let p = document.createElement('span')
-    p.innerHTML = message
-    let btnClose = document.createElement('a')
-    btnClose.innerHTML = '✖'
-    btnClose.classList.add('alert-cross')
-    btnClose.setAttribute('onclick',"removeNotificationDOM()")
-    div.appendChild(p)
-    div.appendChild(btnClose)
-    document.body.appendChild(div)
-}
-
-// Удаляет уведомление сверху
-function removeNotificationDOM(){
-    let div = document.getElementById('msg-notification')
-    div.parentNode.removeChild(div);
-}
-
-// Создает уведомление чата (не сам чат)
-// ЭТО НЕ ЧАТ ЭТО УВЕДОМЛЕНИЕ !!!!
 function createNotificationCHATDOM(user_from,user_from_pk, message){
-    msgAudio.src = staticRoot + 'audio/msg.mp3'; // Указываем путь к звуку "клика"
-    msgAudio.play()
-    let wrap = null;
-    if(document.getElementById("wrapChatMessage") != null){
-        wrap = document.getElementById("wrapChatMessage")
-    }
-    else{
-        wrap = document.createElement('div')
-    }
-    wrap.id = 'wrapChatMessage'
-    div = document.createElement('div')
-    div.classList.add('notificationChat')
-    div.classList.add('message-chat-animation')
-    function removeAnimation(){div.classList.remove('message-chat-animation')}
-    setTimeout(removeAnimation ,1000)
-    div.title = 'нажми enter чтобы отправить'
-    div.classList.add('chat-notification-animation')
-    let nameUser = document.createElement('h3')
-    nameUser.innerHTML = user_from
-    let mess = document.createElement('p')
-    mess.innerHTML = message
-    mess.id = 'chat-notification-message'
-    let btnClose = document.createElement('a')
-    btnClose.innerHTML = '✖'
-    btnClose.classList.add('alert-cross')
-    btnClose.setAttribute('onclick',"removeNotificationCHATDOM(this.parentNode)")
-    let textarea = document.createElement('input')
-    let rand = Math.random().toString(36).substring(7);
-    textarea.id = 'fast-answer-chat-' + rand.toString()
+// звонок
+  let notify = new Noty({
+    text        : '<h3 style="margin:0">' + user_from + '</h3><hr><b>' + message + '</b>',
+    type        : 'alert',
+    layout      : 'bottomRight',
+    theme       : 'metroui',
+    timeout     : 3000,
 
-
-    let btnSubmit = document.createElement('button')
-    let func = 'save_chat('+user_from_pk +',document.getElementById("' +  textarea.id + '").value);' +
-                'removeNotificationCHATDOM(this.parentNode)'
-    btnSubmit.setAttribute('onclick',func)
-    btnSubmit.innerHTML = 'ответить'
-    btnSubmit.classList.add('n-btn')
-    btnSubmit.classList.add('n-btn-success')
-
-    document.body.appendChild(wrap)
-    wrap.appendChild(div)
-    div.appendChild(nameUser)
-    div.appendChild(mess)
-    div.appendChild(btnClose)
-    div.appendChild(textarea)
-    div.appendChild(btnSubmit)
-
-    textarea.addEventListener("keyup", function(event) {
-        if (event.keyCode == 13 && !event.shiftKey) {
-            save_chat(user_from_pk,document.getElementById(textarea.id).value);
-            let target = event.target || event.srcElement;
-            removeNotificationCHATDOM(target.parentNode);
-        }
-    });
-    countChatMessage += 1
-
+    buttons: [
+        Noty.button('Ответить', 'n-btn n-btn-success', function () {
+            callAudio.pause();
+            notify.close();
+        }),
+  ]
+  }).show();
+   // звуковое сопровождение
+   msgAudio.play()
 }
-
-// Удаляет оповещение чата
-function removeNotificationCHATDOM(el){
-    if (countChatMessage == 0){
-        let wrap = document.getElementById('wrapChatMessage')
-        wrap.parentNode.removeChild(wrap);
-    }else{
-        el.parentNode.removeChild(el);
-        countChatMessage -= 1
-    }
-
-}
-
 
 // Ajax взять всех пользователей django для чата (только авторизованным)
 // Создать dom элемент с выбором
@@ -244,14 +142,21 @@ async function open_users_chat(){
     input.type = "text"
     input.id = 'inputFilterUser'
     input.setAttribute('onkeyup','filterUser()')
-    input.placeholder="Поиск по имени.."
+    input.placeholder="  Поиск по имени.."
+    color = document.createElement('input')
+    color.type="color"
+    div.appendChild(color)
+
+
     let ul = document.createElement('ul')
     ul.id = 'listUser'
     document.body.appendChild(div)
     div.appendChild(input)
     div.appendChild(ul)
 
-    let response = await fetch('get_users/');
+
+
+    let response = await fetch('/notification/get_users/');
     if (response.ok) { // если HTTP-статус в диапазоне 200-299
       // получаем тело ответа (см. про этот метод ниже)
       let json = await response.json();
@@ -291,6 +196,7 @@ async function createChatArea(pk_user_to){
     let textarea = document.createElement('textarea')
     textarea.id = 'chatTextArea'
     textarea.title = 'shift + enter чтобы отправить'
+    textarea.placeholder = 'shift + enter чтобы отправить'
     btn = document.createElement('button')
     btn.innerHTML = 'Отправить'
     btn.classList.add("n-btn")
@@ -307,11 +213,6 @@ async function createChatArea(pk_user_to){
     wrapInput.appendChild(btn)
     wrapInput.appendChild(textarea)
 
-
-
-
-
-
     btn.setAttribute('onclick',
         'let textarea = document.getElementById("chatTextArea").value;' +
         'save_chat(' + pk_user_to + ',textarea);' +
@@ -327,7 +228,7 @@ async function createChatArea(pk_user_to){
     });
 
 
-    let response = await fetch('get_chat/' + requestUserPk + '/' + pk_user_to.toString());
+    let response = await fetch('/notification/get_chat/' + requestUserPk + '/' + pk_user_to.toString());
     if (response.ok) { // если HTTP-статус в диапазоне 200-299
       // получаем тело ответа (см. про этот метод ниже)
       let json = await response.json();
@@ -402,7 +303,7 @@ function filterUser() {
 // Отправка сообщения в чат
 async function save_chat(pk_user_to,message){
 
-    let response = await fetch('save_chat/' + pk_user_to,
+    let response = await fetch('/notification/save_chat/' + pk_user_to,
         {
 	    method: "POST",
 	    headers:{'Content-Type': 'application/json','X-CSRFToken': csrf_token},
@@ -418,4 +319,40 @@ async function save_chat(pk_user_to,message){
     }
 }
 
+
+function setBackground(color){
+    localStorage.setItem('notification-background-color')
+}
+
+
+
+function createCallDOM () {
+// звонок
+  let notify = new Noty({
+    text        : '<center><h2>входящий звонок</h2></center>',
+    type        : 'alert',
+    layout      : 'center',
+    theme       : 'metroui',
+    closeWith:['button'],
+    modal: true,
+
+    buttons: [
+    Noty.button('Принять', 'n-btn n-btn-success', function () {
+        answerNotification('call-yes');
+        callAudio.pause();
+        notify.close();
+
+    }, {id: 'button1', 'data-status': 'ok'}),
+
+    Noty.button('Отклонить', 'n-btn n-btn-danger n-float-right', function () {
+        answerNotification('call-no');
+        callAudio.pause();
+        notify.close();
+
+    })
+  ]
+  }).show();
+   // звуковое сопровождение
+   callAudio.play()
+}
 

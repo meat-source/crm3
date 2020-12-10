@@ -96,16 +96,3 @@ def get_chat(request, pk_user_from, pk_user_to):
     obj = obj.order_by('-date_create')[:10]
     data = serializers.serialize('json', obj)
     return HttpResponse(data, 'json')
-
-
-def api_notification(request, pk_user_to, status, auto_close, message):
-    auto_close = json.loads(auto_close.lower())  # str to bool
-    send_notification_user(pk_user_to, message, status, auto_close)
-    return HttpResponse(status=201)
-
-
-def api_chat(request, pk_user_from, pk_user_to, message):
-    user_from = User.objects.get(pk=pk_user_from)
-    user_to = User.objects.get(pk=pk_user_to)
-    send_notification_chat(user_from, user_to, message)
-    return HttpResponse(status=201)

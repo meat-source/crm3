@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '****'
 
@@ -20,6 +21,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -46,7 +48,7 @@ TEMPLATES = [
         },
     },
 ]
-
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # WSGI_APPLICATION = 'main.wsgi.application'
 ASGI_APPLICATION = "main.routing.application"
 CHANNEL_LAYERS = {
@@ -58,6 +60,7 @@ CHANNEL_LAYERS = {
     },
 }
 
+NOTIFICATION_EXAMPLE = True
 
 DATABASES = {
     'default': {
@@ -65,7 +68,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -84,7 +86,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/

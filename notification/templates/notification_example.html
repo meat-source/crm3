@@ -5,23 +5,34 @@
     <meta charset="utf-8"/>
     <title>Chat Room</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <link rel="stylesheet" href="{% static 'notification/css/notification.css' %}"/>
-    <script src="{% static 'notification/js/notification.js' %}"></script>
-    <script>
-        var csrf_token = "{{ csrf_token }}";
-        var staticRoot = "{% get_static_prefix %}" + "notification/";
-        var requestUserPk = Number("{{ request.user.pk }}")
-    </script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    {% include 'notification.html' %}
+    <style>
+        body{font-family:Arial;}
+    </style>
 </head>
 <body>
-<br><br><br><br>
-<h3 style="color:darkred">Для тестирования ваш id user должен быть 1. Также должен существовать user с id = 2</h3>
-<h4>сейчас ваш id = {{ request.user.id }}</h4>
-<div onclick="open_users_chat()" class="n-btn n-btn-success" style="width:20%">Открыть чат</div><br><br>
-<a target="_blank" href="{{ request.scheme}}://{{ request.get_host }}/notification/api/accept/chat/2/1/Hello">отправить уведомление в чат через api</a><br><br>
-<a target="_blank" href="{{ request.scheme}}://{{ request.get_host }}/notification/api/accept/notification/1/danger/False/тест ошибки через api/">отправить уведомление через api</a><br><br>
+<div style="border:solid 1px grey;margin:10%;padding:3%;">
+    {% if request.user.is_authenticated %}
+    <h4>привет {{ request.user }}</h4>
+    <p>Для наглядности примеры нужно открывать средним счелчком мыши</p>
+    <br><br>
+    <a target="_blank" href="/notification/example_send_chat/">отправить уведомление в чат от себя же</a>
+    <br><br>
+    <a target="_blank" href="/notification/example_send_notification/">отправить пример уведомления random</a>
+    <br><br>
+    <a target="_blank" href="/notification/example_call">пример звонка</a>
+    <br><br>
+    <div onclick="open_users_chat()" class="n-btn n-btn-success" style="width:20%">Открыть чат</div>
+    {% else %}
+    You are not logged
+    {% endif %}
+</div>
+
+
+<script>
+
+</script>
+
 </body>
 </html>

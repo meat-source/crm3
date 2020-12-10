@@ -1,17 +1,8 @@
-"""
-ASGI config for main project.
+import os, django
 
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/3.1/howto/deployment/asgi/
-"""
-
-import os
-from websocket.middleware import websockets
-from django.core.asgi import get_asgi_application
-
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'main.settings')
+django.setup()
+from channels.routing import get_default_application
 
-application = get_asgi_application()
-# application = websockets(application)
+application = get_default_application()
